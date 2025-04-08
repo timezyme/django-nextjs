@@ -32,7 +32,8 @@ interface PaginatedResponse {
   count: number;
   next: string | null;
   previous: string | null;
-  results: PostData[];
+  results?: PostData[];
+  items?: PostData[];
 }
 
 export default function ProfilePage({ params }: { params: { id: string } }) {
@@ -76,8 +77,15 @@ export default function ProfilePage({ params }: { params: { id: string } }) {
   
   const fetchProfilePosts = async (page = 1) => {
     try {
-      const data: PaginatedResponse = await fetchUserPosts(userId);
-      setPosts(data.results);
+      const data = await fetchUserPosts(userId);
+      if (data.results) {
+        setPosts(data.results);
+      } else if (data.items) {
+        setPosts(data.items);
+      } else {
+        console.error('Unexpected API response format:', data);
+        setPosts([]);
+      }
       setTotalPages(Math.ceil(data.count / 10)); // Assuming 10 posts per page
     } catch (err) {
       console.error('Error fetching user posts:', err);

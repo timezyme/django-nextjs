@@ -21,7 +21,8 @@ interface PaginatedResponse {
   count: number;
   next: string | null;
   previous: string | null;
-  results: PostData[];
+  results?: PostData[];
+  items?: PostData[];
 }
 
 export default function Home() {
@@ -34,12 +35,26 @@ export default function Home() {
   const fetchPosts = async (page = 1) => {
     setLoading(true);
     try {
-      const data: PaginatedResponse = await fetchAllPosts(page);
-      setPosts(data.results);
-      setTotalPages(Math.ceil(data.count / 10)); // Assuming 10 posts per page
+      const data = await fetchAllPosts(page);
+      // Check if the response is already an array or has a results/items property
+      if (Array.isArray(data)) {
+        setPosts(data);
+        setTotalPages(Math.ceil(data.length / 10)); // Fallback if count is not provided
+      } else if (data && data.results) {
+        setPosts(data.results);
+        setTotalPages(Math.ceil(data.count / 10));
+      } else if (data && data.items) {
+        setPosts(data.items);
+        setTotalPages(Math.ceil(data.count / 10));
+      } else {
+        console.error('Unexpected API response format:', data);
+        setError('Unexpected API response format');
+        setPosts([]);
+      }
     } catch (err) {
       console.error('Error fetching posts:', err);
       setError('Failed to load posts. Please try again later.');
+      setPosts([]);
     } finally {
       setLoading(false);
     }

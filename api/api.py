@@ -11,7 +11,7 @@ from .schemas import (
     ErrorResponse, SuccessResponse, PaginatedPostsOut
 )
 
-api = NinjaAPI(title="Social Media API", version="1.0.0")
+api = NinjaAPI(title="Social Network API", csrf=True, version="1.0.0")
 
 # Authentication
 @api.post("/login/", response={200: UserOut, 401: ErrorResponse})

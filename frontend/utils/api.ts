@@ -40,6 +40,7 @@ export const logoutUser = async () => {
 
 export const fetchUserPosts = async (userId: number) => {
   const response = await apiClient.get(`/users/${userId}/posts/`);
+  console.log('User Posts Response:', response.data);
   return response.data;
 };
 
@@ -56,11 +57,13 @@ export const unfollowUser = async (userId: number) => {
 // Post API calls
 export const fetchAllPosts = async (page = 1) => {
   const response = await apiClient.get(`/posts/?page=${page}`);
+  console.log('API Response:', response.data);
   return response.data;
 };
 
 export const fetchFollowingPosts = async (page = 1) => {
   const response = await apiClient.get(`/posts/following/?page=${page}`);
+  console.log('Following Posts Response:', response.data);
   return response.data;
 };
 

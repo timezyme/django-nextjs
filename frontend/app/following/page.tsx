@@ -22,7 +22,8 @@ interface PaginatedResponse {
   count: number;
   next: string | null;
   previous: string | null;
-  results: PostData[];
+  results?: PostData[];
+  items?: PostData[];
 }
 
 export default function FollowingPage() {
@@ -43,12 +44,21 @@ export default function FollowingPage() {
   const fetchPosts = async (page = 1) => {
     setLoading(true);
     try {
-      const data: PaginatedResponse = await fetchFollowingPosts(page);
-      setPosts(data.results);
+      const data = await fetchFollowingPosts(page);
+      if (data.results) {
+        setPosts(data.results);
+      } else if (data.items) {
+        setPosts(data.items);
+      } else {
+        console.error('Unexpected API response format:', data);
+        setError('Failed to parse API response');
+        setPosts([]);
+      }
       setTotalPages(Math.ceil(data.count / 10)); // Assuming 10 posts per page
     } catch (err) {
       console.error('Error fetching following posts:', err);
       setError('Failed to load posts. Please try again later.');
+      setPosts([]);
     } finally {
       setLoading(false);
     }

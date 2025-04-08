@@ -11,7 +11,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -31,6 +30,8 @@ AUTH_USER_MODEL = 'api.User'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Allow requests from Next.js development server
 ]
+
+CORS_ALLOW_CREDENTIALS = True
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
