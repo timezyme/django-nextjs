@@ -2,54 +2,69 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 
-
 class User(AbstractUser):
-    groups = models.ManyToManyField(
-        'auth.Group',
-        related_name='api_user_set',
-        blank=True,
-        help_text='The groups this user belongs to.',
-        verbose_name='groups',
-    )
-    user_permissions = models.ManyToManyField(
-        'auth.Permission',
-        related_name='api_user_set',
-        blank=True,
-        help_text='Specific permissions for this user.',
-        verbose_name='user permissions',
-    )
-    following = models.ManyToManyField('self', symmetrical=False, related_name='followers', blank=True)
-
-    def serialize(self):
-        return {
-            "id": self.id,
-            "username": self.username,
-            "followers": self.followers.count(),
-            "following": self.following.count()
-        }
+    """
+    Extended User model for our social media platform.
+    Inherits from Django's AbstractUser which already includes:
+    username, email, password, first_name, last_name, etc.
+    """
+    bio = models.TextField(blank=True)
+    profile_picture = models.URLField(blank=True)
+    
+    def follower_count(self):
+        return self.followers.count()
+    
+    def following_count(self):
+        return self.following.count()
+    
+    def __str__(self):
+        return self.username
 
 
 class Post(models.Model):
+    """
+    Model representing a user's post.
+    """
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posts")
     content = models.TextField()
-    timestamp = models.DateTimeField(default=timezone.now)
-    likes = models.ManyToManyField(User, related_name="liked_posts", blank=True)
-
-    def serialize(self):
-        return {
-            "id": self.id,
-            "user": self.user.username,
-            "content": self.content,
-            "timestamp": self.timestamp.strftime("%b %d %Y, %I:%M %p"),
-            "likes": self.likes.count()
-        }
-
+    timestamp = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def like_count(self):
+        return self.likes.count()
+    
+    class Meta:
+        ordering = ['-timestamp']  # Most recent posts first
+    
     def __str__(self):
-        return f"{self.user.username} - {self.timestamp}"
+        return f"{self.user.username}: {self.content[:50]}..."
 
-class Item(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField()
 
+class Like(models.Model):
+    """
+    Model representing a like on a post.
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_likes")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="likes")
+    timestamp = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('user', 'post')  # A user can like a post only once
+    
     def __str__(self):
-        return self.name
+        return f"{self.user.username} likes {self.post.id}"
+
+
+class Follow(models.Model):
+    """
+    Model representing a follow relationship between users.
+    """
+    follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name="following")
+    followed = models.ForeignKey(User, on_delete=models.CASCADE, related_name="followers")
+    timestamp = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('follower', 'followed')  # A user can follow another user only once
+    
+    def __str__(self):
+        return f"{self.follower.username} follows {self.followed.username}"

@@ -1,32 +1,32 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
-import Navbar from "@/components/navbar"
+// app/layout.tsx
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import { AuthProvider } from '@/utils/auth-context';
+import Navbar from '@/components/Navbar';
 
-const inter = Inter({ subsets: ["latin"] })
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: "Network",
-  description: "A modern social network",
-}
+  title: 'Social Network',
+  description: 'A social media platform',
+};
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" data-theme="theme">
       <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <div className="min-h-screen flex flex-col">
-            <Navbar />
-            <main className="flex-1 container mx-auto px-4 py-4 max-w-3xl">{children}</main>
-          </div>
-        </ThemeProvider>
+        <AuthProvider>
+          <Navbar />
+          <main className="container mx-auto py-8 px-4">
+            {children}
+          </main>
+        </AuthProvider>
       </body>
     </html>
-  )
+  );
 }

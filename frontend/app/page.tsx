@@ -1,70 +1,98 @@
-import PostForm from "@/components/post-form"
-import PostList from "@/components/post-list"
+// app/page.tsx
+'use client';
 
-// Mock data for posts
-const posts = [
-  {
-    id: 1,
-    username: "johndoe",
-    content: "Just launched my new project! Check it out at threads.net",
-    timestamp: "2023-04-15T14:30:00Z",
-    likes: 42,
-    isLiked: true,
-    isOwnPost: true,
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: 2,
-    username: "janedoe",
-    content: "Beautiful day for a hike! 🏔️ #nature #outdoors",
-    timestamp: "2023-04-15T12:15:00Z",
-    likes: 28,
-    isLiked: false,
-    isOwnPost: false,
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: 3,
-    username: "techguru",
-    content:
-      "Just tried the new AI features in the latest update. Mind blown! 🤯 What do you all think about the direction AI is heading?",
-    timestamp: "2023-04-15T10:45:00Z",
-    likes: 56,
-    isLiked: true,
-    isOwnPost: false,
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: 4,
-    username: "traveladdict",
-    content: "Just booked my tickets to Japan! Any recommendations for places to visit in Tokyo? #travel #japan",
-    timestamp: "2023-04-15T09:20:00Z",
-    likes: 35,
-    isLiked: false,
-    isOwnPost: false,
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: 5,
-    username: "foodie",
-    content:
-      "Made homemade pasta for the first time today. It was easier than I expected! Recipe in comments. #cooking #homemade",
-    timestamp: "2023-04-14T20:10:00Z",
-    likes: 19,
-    isLiked: false,
-    isOwnPost: false,
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-]
+import { useEffect, useState } from 'react';
+import { fetchAllPosts } from '@/utils/api';
+import Post from '@/components/Post';
+import CreatePost from '@/components/CreatePost';
+import Pagination from '@/components/Pagination';
+
+interface PostData {
+  id: number;
+  user: number;
+  username: string;
+  content: string;
+  timestamp: string;
+  like_count: number;
+  is_liked: boolean;
+}
+
+interface PaginatedResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: PostData[];
+}
 
 export default function Home() {
+  const [posts, setPosts] = useState<PostData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  
+  const fetchPosts = async (page = 1) => {
+    setLoading(true);
+    try {
+      const data: PaginatedResponse = await fetchAllPosts(page);
+      setPosts(data.results);
+      setTotalPages(Math.ceil(data.count / 10)); // Assuming 10 posts per page
+    } catch (err) {
+      console.error('Error fetching posts:', err);
+      setError('Failed to load posts. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  useEffect(() => {
+    fetchPosts(currentPage);
+  }, [currentPage]);
+  
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo(0, 0);
+  };
+  
+  const handlePostCreated = () => {
+    fetchPosts(1);
+    setCurrentPage(1);
+  };
+  
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">All Posts</h1>
-
-      <PostForm />
-
-      <PostList posts={posts} />
+    <div>
+      <h1 className="text-2xl font-bold mb-6">All Posts</h1>
+      
+      <CreatePost onPostCreated={handlePostCreated} />
+      
+      {loading ? (
+        <div className="text-center py-8">Loading posts...</div>
+      ) : error ? (
+        <div className="text-center py-8 text-error-500">{error}</div>
+      ) : posts.length === 0 ? (
+        <div className="text-center py-8">No posts found. Be the first to post!</div>
+      ) : (
+        <div>
+          {posts.map((post) => (
+            <Post
+              key={post.id}
+              id={post.id}
+              userId={post.user}
+              username={post.username}
+              content={post.content}
+              timestamp={post.timestamp}
+              likeCount={post.like_count}
+              isLiked={post.is_liked}
+            />
+          ))}
+          
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        </div>
+      )}
     </div>
-  )
+  );
 }

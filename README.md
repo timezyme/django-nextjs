@@ -1,36 +1,38 @@
-# Django-Next.js Project
+# Django Next.js Social Media Platform
 
-A modern web application built with Django backend and Next.js frontend.
+A social media platform built with Django REST API backend and Next.js frontend.
 
-## Project Structure
+## Features
 
-### /api
-Django REST API backend that handles:
-- Data models and database operations
-- API endpoints and business logic
-- Data validation and serialization
-- Admin interface configuration
+- User authentication system with login/registration
+- Create, edit, and delete posts
+- Follow/unfollow other users
+- Like/unlike posts
+- View all posts or just posts from users you follow
+- User profiles with follower stats
 
-### /core
-Django project core configuration:
-- Project settings and environment configuration
-- URL routing and middleware setup
-- WSGI/ASGI server configuration
-- Database and security settings
+## Technology Stack
 
-### /frontend
-Next.js frontend application featuring:
-- Modern React components and pages
-- TypeScript for type safety
-- Tailwind CSS for styling
-- API integration with the Django backend
+### Backend
+- Django 5.0
+- Django REST Framework
+- SQLite3 database
 
-## Prerequisites
+### Frontend
+- Next.js 15 with TypeScript
+- Tailwind CSS 4
+- ShadCN UI components
+- Lucide React icons
 
-- Python 3.13
-- Node.js 18.x or later
-- pnpm or npm
+## Setup Instructions
 
+### Backend Setup
+
+1. Clone the repository
+2. Create a virtual environment and activate it
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
 ## Setup Instructions
 
 1. Clone the repository:
